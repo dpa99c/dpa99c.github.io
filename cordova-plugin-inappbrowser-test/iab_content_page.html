@@ -24,8 +24,6 @@
         </div>
         <p>Opened <span id="time">0</span> seconds ago</p>
 
-        <button onclick="hide()">Hide</button>
-
         <button onclick="showAlert()">Alert</button>
         <button onclick="showConfirm()">Confirm</button>
         <button onclick="showPrompt()">Prompt</button>
@@ -84,10 +82,6 @@
 
             function getLocalStorage(){
                 document.getElementById('localstorage').value = localStorage.getItem('mykey');
-            }
-
-            function hide(){
-                postMessage("hide");
             }
 
             function showPlatformDetails(){
