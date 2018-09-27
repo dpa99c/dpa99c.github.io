@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>IAB Content Page</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <h1>InappBrowser Content</h1>
+
+        <p>Platform: <span id="platform"></span></p>
+        <p>Webview: <span id="webview"></span></p>
+
+        <div>
+            <label>domain cookie:</label>
+            <input id="domaincookie" />
+        </div>
+        <div>
+            <label>session cookie:</label>
+            <input id="sessioncookie" />
+        </div>
+        <div>
+            <label>localstorage:</label>
+            <input id="localstorage" />
+        </div>
+        <p>Opened <span id="time">0</span> seconds ago</p>
+
+        <button onclick="hide()">Hide</button>
+
+        <button onclick="showAlert()">Alert</button>
+        <button onclick="showConfirm()">Confirm</button>
+        <button onclick="showPrompt()">Prompt</button>
+
+        <script type="text/javascript">
+            // Read cookie
+            function readCookie(name) {
+                var nameEQ = name + "=";
+                var ca = document.cookie.split(';');
+                for(var i=0;i < ca.length;i++) {
+                    var c = ca[i];
+                    while (c.charAt(0) === ' ') {
+                        c = c.substring(1,c.length);
+                    }
+                    if (c.indexOf(nameEQ) === 0) {
+                        return c.substring(nameEQ.length,c.length);
+                    }
+                }
+                return null;
+            }
+
+            // Create cookie
+            function createCookie(name, value, days) {
+                var expires;
+                if (days) {
+                    var date = new Date();
+                    date.setTime(date.getTime()+(days*24*60*60*1000));
+                    expires = "; expires="+date.toGMTString();
+                }
+                else {
+                    expires = "";
+                }
+                document.cookie = name+"="+value+expires+"; path=/";
+            }
+
+            function readDomainCookie(){
+                document.getElementById('domaincookie').value = readCookie('domaincookie');
+            }
+
+            function setDomainCookie(){
+                createCookie('domaincookie', document.getElementById('domaincookie').value, 1);
+            }
+
+            function readSessionCookie(){
+                document.getElementById('sessioncookie').value = readCookie('sessioncookie');
+            }
+
+            function setSessionCookie(){
+                createCookie('sessioncookie', document.getElementById('sessioncookie').value, 0);
+            }
+
+
+            function setLocalStorage(){
+                localStorage.setItem('mykey', document.getElementById('localstorage').value);
+            }
+
+            function getLocalStorage(){
+                document.getElementById('localstorage').value = localStorage.getItem('mykey');
+            }
+
+            function hide(){
+                postMessage("hide");
+            }
+
+            function showPlatformDetails(){
+                var webView, platform;
+                if (navigator.userAgent.match("Apple")) {
+                    platform = "iOS";
+                    if (window.webkit && window.webkit.messageHandlers) {
+                        webView = "WKWebView";
+                    } else {
+                        webView = "UIWebView";
+                    }
+                } else {
+                    platform = "Android";
+                    if (navigator.userAgent.toLowerCase().indexOf('crosswalk') > -1) {
+                        webView = "Crosswalk";
+                    } else {
+                        webView = "System";
+                    }
+                }
+                document.getElementById('platform').innerHTML = platform;
+                document.getElementById('webview').innerHTML = webView;
+            }
+
+            function onReady(){
+                console.log("ready");
+                showPlatformDetails();
+            }
+
+            function showAlert(){
+                window.alert('Alert!');
+            }
+
+            function showConfirm(){
+                var result = window.confirm("Confirm?");
+                window.alert('You chose ' + (result ? 'OK' : 'Cancel'));
+            }
+
+            function showPrompt(){
+                var result = window.prompt("Enter something");
+                if(result !== null){
+                    result = 'You entered "' + result + '"';
+                }else{
+                    result = 'You pressed Cancel';
+                }
+                window.alert(result);
+            }
+
+            (function(){
+                readDomainCookie();
+                readSessionCookie();
+                getLocalStorage();
+                document.getElementById('domaincookie').addEventListener('change', setDomainCookie);
+                document.getElementById('sessioncookie').addEventListener('change', setSessionCookie);
+                document.getElementById('localstorage').addEventListener('change', setLocalStorage);
+                document.addEventListener('DOMContentLoaded', onReady);
+            })();
+        </script>
+    </body>
+</html>
+
