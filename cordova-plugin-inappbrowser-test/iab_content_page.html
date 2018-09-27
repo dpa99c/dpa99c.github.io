@@ -11,8 +11,8 @@
         <p>Webview: <span id="webview"></span></p>
 
         <div>
-            <label>domain cookie:</label>
-            <input id="domaincookie" />
+            <label>expiry cookie:</label>
+            <input id="expirycookie" />
         </div>
         <div>
             <label>session cookie:</label>
@@ -29,50 +29,53 @@
         <button onclick="showPrompt()">Prompt</button>
 
         <script type="text/javascript">
-            // Read cookie
-            function readCookie(name) {
-                var nameEQ = name + "=";
-                var ca = document.cookie.split(';');
-                for(var i=0;i < ca.length;i++) {
-                    var c = ca[i];
-                    while (c.charAt(0) === ' ') {
-                        c = c.substring(1,c.length);
-                    }
-                    if (c.indexOf(nameEQ) === 0) {
-                        return c.substring(nameEQ.length,c.length);
-                    }
+            var docCookies = {
+              getItem: function (sKey) {
+                return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
+              },
+              setItem: function (sKey, sValue, vEnd, sPath, sExpiry, bSecure) {
+                if (!sKey || /^(?:expires|max\-age|path|persistent|secure)$/i.test(sKey)) { return false; }
+                var sExpires = "";
+                if (vEnd) {
+                  switch (vEnd.constructor) {
+                    case Number:
+                      sExpires = vEnd === Infinity ? "; expires=Fri, 31 Dec 9999 23:59:59 GMT" : "; max-age=" + vEnd;
+                      break;
+                    case String:
+                      sExpires = "; expires=" + vEnd;
+                      break;
+                    case Date:
+                      sExpires = "; expires=" + vEnd.toUTCString();
+                      break;
+                  }
                 }
-                return null;
+                document.cookie = encodeURIComponent(sKey) + "=" + encodeURIComponent(sValue) + sExpires + (sExpiry ? "; persistent=" + sExpiry : "") + (sPath ? "; path=" + sPath : "") + (bSecure ? "; secure" : "");
+                return true;
+              },
+              removeItem: function (sKey, sPath, sExpiry) {
+                if (!sKey || !this.hasItem(sKey)) { return false; }
+                document.cookie = encodeURIComponent(sKey) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT" + ( sExpiry ? "; persistent=" + sExpiry : "") + ( sPath ? "; path=" + sPath : "");
+                return true;
+              },
+              hasItem: function (sKey) {
+                return (new RegExp("(?:^|;\\s*)" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=")).test(document.cookie);
+              }
+            };
+
+            function readExpiryCookie(){
+                document.getElementById('expirycookie').value = docCookies.getItem('expirycookie');
             }
 
-            // Create cookie
-            function createCookie(name, value, days) {
-                var expires;
-                if (days) {
-                    var date = new Date();
-                    date.setTime(date.getTime()+(days*24*60*60*1000));
-                    expires = "; expires="+date.toGMTString();
-                }
-                else {
-                    expires = "";
-                }
-                document.cookie = name+"="+value+expires+"; path=/";
-            }
-
-            function readDomainCookie(){
-                document.getElementById('domaincookie').value = readCookie('domaincookie');
-            }
-
-            function setDomainCookie(){
-                createCookie('domaincookie', document.getElementById('domaincookie').value, 1);
+            function setExpiryCookie(){
+                docCookies.setItem('expirycookie', document.getElementById('expirycookie').value, 60*60*24);
             }
 
             function readSessionCookie(){
-                document.getElementById('sessioncookie').value = readCookie('sessioncookie');
+                document.getElementById('sessioncookie').value = docCookies.getItem('sessioncookie');
             }
 
             function setSessionCookie(){
-                createCookie('sessioncookie', document.getElementById('sessioncookie').value, 0);
+                docCookies.setItem('sessioncookie', document.getElementById('sessioncookie').value);
             }
 
 
@@ -130,10 +133,10 @@
             }
 
             (function(){
-                readDomainCookie();
+                readExpiryCookie();
                 readSessionCookie();
                 getLocalStorage();
-                document.getElementById('domaincookie').addEventListener('change', setDomainCookie);
+                document.getElementById('expirycookie').addEventListener('change', setExpiryCookie);
                 document.getElementById('sessioncookie').addEventListener('change', setSessionCookie);
                 document.getElementById('localstorage').addEventListener('change', setLocalStorage);
                 document.addEventListener('DOMContentLoaded', onReady);
