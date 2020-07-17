@@ -11,7 +11,7 @@ navigator.serviceWorker.addEventListener('message', event => {
 function onReady(){
 	log("Fetching target URL");
 
-	if(serviceWorkersNotSupported || serviceWorkerActivated){
+	if(window.serviceWorkersNotSupported || window.serviceWorkerActivated){
 		doFetch();
 	}else{
 		document.addEventListener("service-worker-activated", doFetch, false);
