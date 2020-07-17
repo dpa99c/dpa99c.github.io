@@ -2,23 +2,18 @@ var targetUrl = "https://dpa99c.github.io/test/mailto.html";
 
 navigator.serviceWorker.addEventListener('message', event => {
 	log("service worker: "+event.data.msg);
-	if(event.data.msg === "activating"){
-		window.serviceWorkerActivated = true;
-		document.dispatchEvent(new Event("service-worker-activated"));
-	}
 });
 
 function onReady(){
-	log("Fetching target URL");
-
-	if(window.serviceWorkersNotSupported || window.serviceWorkerActivated){
+	if(window.serviceWorkersNotSupported || window.serviceWorkerRegistered){
 		doFetch();
 	}else{
-		document.addEventListener("service-worker-activated", doFetch, false);
+		document.addEventListener("service-worker-registered", doFetch, false);
 	}
 }
 
 function doFetch(){
+	log("Fetching target URL");
 	fetch(targetUrl)
 		.then(function(){
 			log("Fetch successful");
