@@ -1,36 +1,107 @@
-var targetUrl = "https://dpa99c.github.io/test/mailto.html";
-var JWT = "1234567890";
+(function(){
+    var targetUrl = "test/mailto.html";
+    var JWT = "1234567890";
 
-function log(msg){
-    console.log(msg);
-    self.clients.matchAll().then(clients => {
-        clients.forEach(client => client.postMessage({msg: msg}));
-    })
-}
-
-self.addEventListener('install', function (event) {
-    log('installing');
-});
-
-self.addEventListener('activate', function(event) {
-    log('activating');
-});
-
-self.addEventListener('fetch', function(event) {
-    try{
-        if(event.request.url.match(targetUrl)){
-            log("intercepting fetch(): " + event.request.url);
-            let modifiedHeaders = new Headers(event.request.headers);
-            modifiedHeaders.set('Authorization', 'Bearer ' + JWT);
-
-            let modifiedRequest = new Request(event.request, {
-                headers: modifiedHeaders
-            });
-
-            event.respondWith(fetch(modifiedRequest));
-        }
-    }catch(exception){
-        log('ERROR - Fetch event raised exception:', exception);
-        throw exception;
+    function isRunningAsServiceWorker(){
+        return typeof window === 'undefined';
     }
-});
+
+    function log(msg){
+        console.log(msg);
+        if(isRunningAsServiceWorker()){
+            self.clients.matchAll().then(clients => {
+                clients.forEach(client => client.postMessage({msg: msg}));
+            })
+        }else{
+            document.dispatchEvent(new CustomEvent("service-worker-message", {detail: msg}));
+        }
+    }
+
+    function modifyRequest(request){
+        log("intercepting fetch(): " + request.url);
+        let modifiedHeaders = new Headers(request.headers);
+        modifiedHeaders.set('Authorization', 'Bearer ' + JWT);
+
+        return new Request(request, {
+            headers: modifiedHeaders
+        });
+    }
+
+    async function modifyResponse(response){
+        const bodyText = await response.text();
+        const modifiedBodyText = "modified response: "+bodyText;
+        return new Response(modifiedBodyText, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers
+        });
+    }
+
+    if(isRunningAsServiceWorker()){
+        log("Running as service worker");
+        self.addEventListener('install', event => event.waitUntil(installServiceWorker()));
+        async function installServiceWorker() {
+            log("Service Worker installing");
+            return self.skipWaiting();
+        }
+
+        self.addEventListener('activate', event => event.waitUntil(activateServiceWorker()));
+        async function activateServiceWorker() {
+            log("Service Worker activating");
+            return self.clients.claim();
+        }
+
+        self.addEventListener('activate', function(event) {
+            event.waitUntil(self.clients.claim());
+        });
+
+        // Intercept fetch requests
+        self.addEventListener("fetch", event => {
+            event.respondWith(fetchAndModify(event.request));
+        });
+        async function fetchAndModify(request) {
+            try{
+                // intercept request here
+                if(request.url.match(targetUrl)){
+                    request = modifyRequest(request);
+                }
+
+                let response = await fetch(request);
+
+                // intercept response here
+                if(request.url.match(targetUrl)){
+                    response = modifyResponse(response);
+                }
+
+                return response;
+            }catch(exception){
+                log('ERROR - Fetch event raised exception:', exception);
+                throw exception;
+            }
+        }
+    }else{
+        log("Running as script");
+
+        // Monkey patch window.fetch
+        const fetch = window.fetch;
+        window.fetch = (...args) => (async(args) => {
+            let request = args[0];
+            if (typeof request === "string"){
+                request = new Request(request);
+            }
+
+            // intercept request here
+            if(request.url.match(targetUrl)){
+                args[0] = modifyRequest(request);
+            }
+
+            let response = await fetch(...args);
+
+             // intercept response here
+            if(request.url.match(targetUrl)){
+                response = modifyResponse(response);
+            }
+            return response;
+        })(args);
+    }
+})();
