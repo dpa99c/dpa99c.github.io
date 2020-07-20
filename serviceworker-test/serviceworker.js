@@ -39,6 +39,7 @@
 
     if(isRunningAsServiceWorker()){
         log("Running as service worker");
+
         self.addEventListener('install', event => event.waitUntil(installServiceWorker()));
         async function installServiceWorker() {
             log("Service Worker installing");
@@ -50,10 +51,6 @@
             log("Service Worker activating");
             return self.clients.claim();
         }
-
-        self.addEventListener('activate', function(event) {
-            event.waitUntil(self.clients.claim());
-        });
 
         // Intercept fetch requests
         self.addEventListener("fetch", event => {
