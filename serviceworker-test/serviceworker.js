@@ -54,14 +54,14 @@
 
         // Intercept fetch requests
         self.addEventListener("fetch", event => {
-            event.respondWith(fetchAndModify(event.request));
+            if(event.request.url.match(targetUrl)){
+                event.respondWith(fetchAndModify(event.request));
+            }
         });
         async function fetchAndModify(request) {
             try{
                 // intercept request here
-                if(request.url.match(targetUrl)){
-                    request = modifyRequest(request);
-                }
+                request = modifyRequest(request);
 
                 // Workaround for Chrome bug: https://stackoverflow.com/a/49719964/777265
                 if (request.cache === 'only-if-cached' && request.mode !== 'same-origin') {
@@ -71,9 +71,7 @@
                 let response = await fetch(request);
 
                 // intercept response here
-                if(request.url.match(targetUrl)){
-                    response = modifyResponse(response);
-                }
+                response = modifyResponse(response);
 
                 return response;
             }catch(exception){
