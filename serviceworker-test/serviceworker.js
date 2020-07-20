@@ -42,13 +42,13 @@
 
         self.addEventListener('install', event => event.waitUntil(installServiceWorker()));
         async function installServiceWorker() {
-            log("Service Worker installing");
+            log("installing");
             return self.skipWaiting();
         }
 
         self.addEventListener('activate', event => event.waitUntil(activateServiceWorker()));
         async function activateServiceWorker() {
-            log("Service Worker activating");
+            log("activating");
             return self.clients.claim();
         }
 

@@ -13,7 +13,13 @@ if(areServiceWorkersAvailable()){
 
 function onReady(){
 	if(areServiceWorkersAvailable() && !window.serviceWorkerRegistered){
-		document.addEventListener("service-worker-registered", doFetch, false);
+		if(window.serviceWorkerActive || window.serviceWorkerUpdated || window.serviceWorkerInstalled){
+			doFetch();
+		}else{
+			document.addEventListener("service-worker-registered", doFetch, false);
+			document.addEventListener("service-worker-updated", doFetch, false);
+			document.addEventListener("service-worker-installed", doFetch, false);
+		}
 	}else{
 		doFetch();
 	}
