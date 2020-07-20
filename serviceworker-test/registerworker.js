@@ -14,6 +14,8 @@ if(areServiceWorkersAvailable()) {
     log('Service Workers available -  registering...');
     navigator.serviceWorker.register(serviceWorkerPath).then(function (registration) {
         log('Service Worker registered');
+        window.serviceWorkerRegistered = true;
+        document.dispatchEvent(new Event("service-worker-registered"));
     });
 }else{
     // Load as script

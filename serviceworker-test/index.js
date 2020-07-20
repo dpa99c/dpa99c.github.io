@@ -12,7 +12,11 @@ if(areServiceWorkersAvailable()){
 
 
 function onReady(){
-	doFetch();
+	if(areServiceWorkersAvailable() && !window.serviceWorkerRegistered){
+		document.addEventListener("service-worker-registered", doFetch, false);
+	}else{
+		doFetch();
+	}
 }
 
 function doFetch(){
