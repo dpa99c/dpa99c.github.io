@@ -63,11 +63,6 @@
                 // intercept request here
                 request = modifyRequest(request);
 
-                // Workaround for Chrome bug: https://stackoverflow.com/a/49719964/777265
-                if (request.cache === 'only-if-cached' && request.mode !== 'same-origin') {
-                    return;
-                }
-
                 let response = await fetch(request);
 
                 // intercept response here
