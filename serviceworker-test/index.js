@@ -87,11 +87,9 @@ function onServiceWorkerReady(){
 
 function doFetch(){
 	log("Fetching target URL");
-	if(areServiceWorkersAvailable()){
-		log("Service worker controller defined: "+!!navigator.serviceWorker.controller);
-		if(navigator.serviceWorker.controller){
-			log("Service worker state: "+navigator.serviceWorker.controller.state);
-		}
+	if(areServiceWorkersAvailable() && !navigator.serviceWorker.controller){
+		alert("ERROR: service worker is active but not in control of this tab so cannot intercept fetch() - probably due to a hard refresh - will now soft reload");
+		return window.location.reload();
 	}
 
 	fetch(targetUrl)
