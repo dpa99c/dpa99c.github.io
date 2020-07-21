@@ -1,5 +1,5 @@
 (function(){
-    var targetUrl = "test/mailto.html";
+    var targetUrl = "content.json";
     var JWT = "1234567890";
 
     function isRunningAsServiceWorker(){

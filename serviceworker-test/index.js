@@ -1,4 +1,4 @@
-var targetUrl = "../test/mailto.html";
+var targetUrl = "content.json";
 
 if(areServiceWorkersAvailable()){
 	navigator.serviceWorker.addEventListener('message', event => {
