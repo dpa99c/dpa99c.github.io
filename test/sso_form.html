@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript">
+        var action, sp, ex;
+
+        function doPost() {
+            var form = document.getElementById("form");
+            var spInput = document.getElementById("sp");
+            var exInput = document.getElementById("ex");
+
+            form.setAttribute("action", action);
+            spInput.setAttribute("value", sp);
+            exInput.setAttribute("value", ex);
+            form.submit();
+        }
+
+    </script>
+</head>
+<body>
+<form id="form" method="POST" action="">
+    <input id="sp" name="sp" type="hidden"/>
+    <input id="ex" name="ex" type="hidden"/>
+</form>
+
+</body>
+</html>
