@@ -1,0 +1,3 @@
+[submodule "stereoscopic-slideshow"]
+	path = stereoscopic-slideshow
+	url = https://github.com/dpa99c/stereoscopic-slideshow.git
